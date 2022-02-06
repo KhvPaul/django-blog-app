@@ -163,6 +163,7 @@ class BlogUpdateView(LoginRequiredMixin, generic.UpdateView):
     def form_valid(self, form):
         form.instance.is_posted = False
         form.instance.notified = False
+        form.save()
         # if Blog.objects.get(pk=self.object.pk).publication_request:
         #     message.delay(
         #         blog=self.object.pk,
@@ -195,6 +196,7 @@ class CommentCreateView(SuccessMessageMixin, generic.CreateView):
     def form_valid(self, form):
         comment = form.save(commit=False)
         comment.blog = Blog.objects.get(pk=self.kwargs['pk'])
+        comment.save()
         # message.delay(
         #     comment=comment.id,
         #     blogger=None,
