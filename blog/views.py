@@ -125,10 +125,9 @@ class BlogCreateView(LoginRequiredMixin, SuccessMessageMixin, generic.CreateView
     model = Blog
     fields = ('title', 'content', 'publication_request')
     success_message = 'Blog successfully created'
-    success_url = reverse_lazy('blog-list')
 
     def get_success_url(self):
-        return reverse('blog-detail', kwargs={'pk': Blog.objects.last().pk})
+        return reverse('blog-detail', kwargs={'pk': Blog.objects.filter(blogger=self.request.user.pk).last()})
 
     def form_valid(self, form):
         blog = form.save(commit=False)
@@ -181,20 +180,21 @@ class BlogDeleteView(LoginRequiredMixin, generic.DeleteView):
 
 class CommentCreateView(SuccessMessageMixin, generic.CreateView):
     model = Comment
-    fields = ('blogger', "content", 'blog')
+    fields = ('blogger', "content")
     success_message = 'Comment successfully created'
 
     def get_success_url(self):
         return reverse('blog-detail', kwargs={'pk': self.object.blog.pk})
 
-    def get_initial(self):
-        blog = get_object_or_404(Blog, id=self.kwargs['pk'])
-        return {
-            'blog': blog
-        }
+    # def get_initial(self):
+    #     blog = get_object_or_404(Blog, c)
+    #     return {
+    #         'blog': blog
+    #     }
 
     def form_valid(self, form):
-        comment = form.save()
+        comment = form.save(commit=False)
+        comment.blog = Blog.objects.get(pk=self.kwargs['pk'])
         # message.delay(
         #     comment=comment.id,
         #     blogger=None,
