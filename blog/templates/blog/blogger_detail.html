@@ -1,0 +1,60 @@
+{% extends "base_generic.html" %}
+
+{% block content %}
+    <div class="container" style="display: flex; flex-direction: column; align-items: start; margin-top: 10px;">
+        <div class="container" style="display: flex; flex-direction: row; align-items: center">
+            <h1 style="margin-right: 20px;">Blogger: {{ blogger.username }}</h1><br>
+        {% if blogger.pk == request.user.pk %}
+            <a style="height: 100%; padding: 0.2em; background: rgb(38,188,245); color: black; border-radius: 10%" href="{% url 'blogger-update' blogger.pk %}">Edit</a>
+        {% endif %}
+        {% if blogger.pk == request.user.pk %}
+            <a style="height: 100%; padding: 0.2em; background: rgb(255,23,78); color: black; border-radius: 10%" href="{% url 'change_password' %}">Update Password</a>
+        {% endif %}
+        </div>
+        {% if blogger.profile_picture %}
+            <img style="width: 250px; height: 250px;" src="{{ blogger.profile_picture.url }}" alt="https://tanzolymp.com/images/default-non-user-no-photo-1.jpg">
+        {% endif %}
+        {% if blogger.first_name %}
+            <p>First Name: {{ blogger.first_name }}</p>
+        {% endif %}
+        {% if blogger.last_name %}
+            <p>Last Name: {{ blogger.last_name }}</p>
+        {% endif %}
+        {% if blogger.email %}
+            <p>Email: {{ blogger.email }}</p>
+        {% endif %}
+        {% if blogger.username == 'president.gov.ua' %}
+            <h3>Link:</h3>
+            <p><a href="{{ blogger.bio }}">gov.ua</a></p>
+        {% else %}
+            <h4>Bio</h4>
+            <p>{{ blogger.bio }}</p>
+        {% endif %}
+    </div>
+
+
+{#    <h4>Blogs list</h4>#}
+      {% for blog in object_list %}
+        <div class="container-sm-2">
+           <h4><a href="{{ blog.get_absolute_url }}">{{ blog.title|title }}</a></h4>
+            <div class="content" style="overflow: hidden;">
+                <p>{{ blog.get_formatted_post_date }}</p>
+                {% if not blog.is_posted %}
+                    <p>Print requested: <a href="{% url 'blog-update' blog.pk %}">{{ blog.publication_request }}</a></p>
+                    {% endif %}
+                <p style="margin: 10px; width: 55%;: break-all;">{{ blog.content|truncatechars_html:150 }}</p>
+            </div>
+        </div>
+        {% endfor %}
+{#        <ul>#}
+
+
+{#                <li><a href=">{{ blog.title }}</a> {{ blog.get_formatted_post_date }}#}
+{#                    {% if request.user == blog.author.user or request.user.is_staff %}#}
+{#                        | <a href="{% url 'update-request' request.user.id %}">request</a>#}
+{#                    {% endif %}#}
+{#                    </li>#}
+{#            {% endfor %}#}
+{#        </ul>#}
+{#  </div>#}
+{% endblock %}

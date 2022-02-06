@@ -1,0 +1,14 @@
+{% extends "base_generic.html" %}
+{% load cache %}
+{% block title %}
+    <title>Hw11</title>
+{% endblock %}
+{% block content %}
+<h1>Blog Application</h1>
+    <p>The application has the following record counts:</p>
+    <ul>
+        <li><strong>Bloggers:</strong> {{ num_bloggers }}</li>
+        <li><strong>Blogs:</strong> {{ num_blogs }}</li>
+        <li><strong>Comments:</strong> {{ num_comments }}</li>
+    </ul>
+{% endblock %}
