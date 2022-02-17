@@ -10,17 +10,13 @@
     {% if blog_list %}
             <div class="container" style="margin-left:20px;margin-top:20px">
       {% for blog in blog_list %}
-        <div class="container-sm-2">
-           <h4><a href="{{ blog.get_absolute_url }}">{{ blog.title|title }}</a></h4>
-            <div class="content" style="overflow: hidden;">
-            <div class="container" style="display: flex; flex-direction: row;">
-                <p>{{ blog.get_formatted_post_date }}</p>
-                <p style="margin-left: 10px;"><a href="{% url 'blogger-detail' blog.blogger.pk %}">{{ blog.blogger.username }}</a></p>
-            </div>
+        <div class="blog-post">
+            <h3 class="blog-post-title"><a href="{{ blog.get_absolute_url }}">{{ blog.title|title }}</a></h3>
+            <p class="blog-post-meta">{{ blog.get_formatted_post_date }} <a href="{% url 'blogger-detail' blog.blogger.pk %}">{{ blog.blogger.username }}</a></p>
 
-                <p style="margin: 10px; width: 55%;: break-all;">{{ blog.content|truncatechars_html:500 }}</p>
-            </div>
-        </div>
+            <p>{{ blog.content|truncatechars_html:50 }}</p>
+          </div>
+            <br>
         {% endfor %}
     </div>
     {% else %}
@@ -28,3 +24,5 @@
     {% endif %}
 {#    {% endcache %}#}
 {% endblock %}
+
+

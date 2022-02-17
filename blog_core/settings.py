@@ -39,6 +39,9 @@ INSTALLED_APPS = [
     'django.contrib.sessions',
     'django.contrib.messages',
     'django.contrib.staticfiles',
+
+    # 'whitenoise.runserver_nostatic',
+
     'blog.apps.BlogConfig',
 
     'django_cleanup.apps.CleanupConfig',
@@ -47,7 +50,7 @@ INSTALLED_APPS = [
 
 MIDDLEWARE = [
     'django.middleware.security.SecurityMiddleware',
-    'whitenoise.middleware.WhiteNoiseMiddleware',
+    # 'whitenoise.middleware.WhiteNoiseMiddleware',
     'django.contrib.sessions.middleware.SessionMiddleware',
     'django.middleware.common.CommonMiddleware',
     'django.middleware.csrf.CsrfViewMiddleware',
@@ -123,9 +126,18 @@ USE_TZ = True
 # Static files (CSS, JavaScript, Images)
 # https://docs.djangoproject.com/en/4.0/howto/static-files/
 
-STATIC_URL = 'static/'
-STATIC_ROOT = os.path.join(BASE_DIR, 'staticfiles')
-STATICFILES_DIRS = [os.path.join(BASE_DIR, 'static')]
+STATIC_URL = '/static/'
+MEDIA_URL = '/images/'
+# STATIC_ROOT = os.path.join(BASE_DIR, 'static')
+# STATICFILES_DIRS = [os.path.join(BASE_DIR, 'static')]
+
+if DEBUG:
+    STATICFILES_DIRS = [os.path.join(BASE_DIR, 'static')]
+else:
+    STATIC_ROOT = os.path.join(BASE_DIR, 'static')
+    STATICFILES_STORAGE = 'whitenoise.storage.CompressedStaticFilesStorage'
+
+MEDIA_ROOT = os.path.join(BASE_DIR, 'static', 'images')
 
 # Default primary key field type
 # https://docs.djangoproject.com/en/4.0/ref/settings/#default-auto-field
@@ -135,52 +147,56 @@ DEFAULT_AUTO_FIELD = 'django.db.models.BigAutoField'
 # The absolute path to the directory where collectstatic will collect static files for deployment.
 
 
-# CELERY_TASK_TRACK_STARTED = True
-# CELERY_TASK_TIME_LIMIT = 30 * 60
-# CELERY_RESULT_BACKEND = 'django-db'
+CELERY_TASK_TRACK_STARTED = True
+CELERY_TASK_TIME_LIMIT = 30 * 60
+CELERY_RESULT_BACKEND = 'redis://127.0.0.1:6379'
 # # CELERY_BROKER_URL = 'amqp://localhost'
-# # CELERY_BROKER_URL = 'redis://127.0.0.1:6379'
-# CELERY_ACCEPT_CONTENT = ['application/json']
-# CELERY_TASK_SERIALIZER = 'json'
-# CELERY_RESULT_SERIALIZER = 'json'
-# CELERY_TIMEZONE = TIME_ZONE
+CELERY_BROKER_URL = 'redis://127.0.0.1:6379'
+CELERY_ACCEPT_CONTENT = ['application/json']
+CELERY_TASK_SERIALIZER = 'json'
+CELERY_RESULT_SERIALIZER = 'json'
+CELERY_TIMEZONE = TIME_ZONE
 
 
 # CELERY_RESULT_BACKEND = 'amqp://guest:**@localhost:5672//'
-# CELERY_BROKER_URL = 'redis://:p780ebfb604e83c6d2956dc109adda055e5dea47b0c09ec36740e72d' \
-#                     'b20fc8613@ec2-54-154-3-141.eu-west-1.compute.amazonaws.com:14290'
+# CELERY_BROKER_URL = 'redis://:pe3c1f5f0aca12719a8e6686bd58f29936a43d61658bf6d46dce2081c8874c2fe@ec2-52-16-135-150.
+# eu-west-1.compute.amazonaws.com:24280'
 
 
-# CACHES = {
-#     "default": {
-#         "BACKEND": "django_redis.cache.RedisCache",
-#         "LOCATION": "redis://127.0.0.1:6379/1",
-#         "OPTIONS": {
-#             "CLIENT_CLASS": "django_redis.client.DefaultClient",
-#         }
-#     }
-# }
+CACHES = {
+    "default": {
+        "BACKEND": "django_redis.cache.RedisCache",
+        "LOCATION": "redis://127.0.0.1:6379/1",
+        "OPTIONS": {
+            "CLIENT_CLASS": "django_redis.client.DefaultClient",
+        }
+    }
+}
 
 LOGIN_URL = '/signup/'
 LOGIN_REDIRECT_URL = '/signup/'
 LOGOUT_REDIRECT_URL = '/signup/'
 
-MEDIA_URL = '/images/'
+# MEDIA_URL = '/images/'
+#
+# MEDIA_ROOT = os.path.join(BASE_DIR, 'static', 'images')
 
-MEDIA_ROOT = os.path.join(BASE_DIR, 'static/images')
+# Email Backend
 
-EMAIL_BACKEND = "django.core.mail.backends.smtp.EmailBackend"
-EMAIL_HOST_USER = "khv.django.mail2@gmail.com"
-EMAIL_HOST = 'smtp.gmail.com'
-EMAIL_PORT = 587
-EMAIL_USE_TLS = True
-EMAIL_HOST_PASSWORD = "cormib-Pecwyk-makpy4"
+EMAIL_BACKEND = "django.core.mail.backends.console.EmailBackend"
+
+# EMAIL_BACKEND = "django.core.mail.backends.smtp.EmailBackend"
+# EMAIL_HOST_USER = "khv.django.mail2@gmail.com"
+# EMAIL_HOST = 'smtp.gmail.com'
+# EMAIL_PORT = 587
+# EMAIL_USE_TLS = True
+# EMAIL_HOST_PASSWORD = "cormib-Pecwyk-makpy4"
 
 # Heroku: Update database configuration from $DATABASE_URL.
 # db_from_env = dj_database_url.config()
 # DATABASES['default'].update(db_from_env)
 
-STATICFILES_STORAGE = 'whitenoise.storage.CompressedManifestStaticFilesStorage'
+# STATICFILES_STORAGE = 'whitenoise.storage.CompressedManifestStaticFilesStorage'
 
 
 # CHANNEL_LAYERS = {
@@ -192,6 +208,3 @@ STATICFILES_STORAGE = 'whitenoise.storage.CompressedManifestStaticFilesStorage'
 #         },
 #     },
 # }
-
-
-# ASGI_APPLICATON = ''

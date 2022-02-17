@@ -1,31 +1,31 @@
-# from datetime import datetime
-#
-#
+from datetime import datetime
+
+
 # from blog.models import Blog, Blogger, Comment
-#
+
 # from bs4 import BeautifulSoup
-#
-# from celery import shared_task
-#
-# from django.core.mail import send_mail
-#
+
+from celery import shared_task
+
+from django.core.mail import send_mail
+
 # import requests
-#
-#
-# @shared_task
-# def message(blogger, blog: str = None, comment: str = None, updated: bool = False):
-#     text = f'Blog id({blog})' if blog else f'Comment id({comment})'
-#     result = 'updated' if updated else 'added'
-#     user = f' by user({blogger})' if blogger else ''
-#     send_mail(
-#         'FIY',
-#         f'{datetime.now().strftime("%Y-%m-%d %H:%M:%S")}: {text} was {result}{user}',
-#         "khv.django.mail@gmail.com",
-#         ['khv.django.mail2@gmail.com'],
-#         fail_silently=False,
-#     )
-#
-#
+
+
+@shared_task
+def message(blogger, blog: str = None, comment: str = None, updated: bool = False):
+    text = f'Blog id({blog})' if blog else f'Comment id({comment})'
+    result = 'updated' if updated else 'added'
+    user = f' by user({blogger})' if blogger else ''
+    send_mail(
+        'FIY',
+        f'{datetime.now().strftime("%Y-%m-%d %H:%M:%S")}: {text} was {result}{user}',
+        "khv.django.mail@gmail.com",
+        ['khv.django.mail2@gmail.com'],
+        fail_silently=False,
+    )
+
+
 # @shared_task
 # def blog_message():
 #     blogs = Blog.objects.filter(notified=False)
@@ -90,13 +90,13 @@
 #                 )
 #
 #
-# @shared_task()
-# def contact_us(email, text):
-#     send_mail(
-#         f'FIY from {email}',
-#         f'{datetime.now().strftime("%Y-%m-%d %H:%M:%S")}: '
-#         f'{text}',
-#         "khv.django.mail2@gmail.com",
-#         ["khv.django.mai2l@gmail.com"],
-#         fail_silently=False,
-#     )
+@shared_task()
+def contact_us(email, text):
+    send_mail(
+        f'FIY from {email}',
+        f'{datetime.now().strftime("%Y-%m-%d %H:%M:%S")}: '
+        f'{text}',
+        "khv.django.mail2@gmail.com",
+        ["khv.django.mai2l@gmail.com"],
+        fail_silently=False,
+    )

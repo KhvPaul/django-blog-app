@@ -1,18 +1,18 @@
-# import os
-#
-# from celery import Celery
+import os
+
+from celery import Celery
 # from celery.schedules import crontab
-#
-# from django.conf import settings
-#
-# os.environ.setdefault('DJANGO_SETTINGS_MODULE', 'blog_core.settings')
-#
-# app = Celery('blog_core')
-#
-# app.config_from_object('django.conf:settings', namespace='CELERY')
-#
-# app.autodiscover_tasks(lambda: settings.INSTALLED_APPS)
-#
+
+from django.conf import settings
+
+os.environ.setdefault('DJANGO_SETTINGS_MODULE', 'blog_core.settings')
+
+app = Celery('blog_core')
+
+app.config_from_object('django.conf:settings', namespace='CELERY')
+
+app.autodiscover_tasks(lambda: settings.INSTALLED_APPS)
+
 # app.conf.beat_schedule = {
 #     'notify-blogger-comment': {
 #         'task': 'blog.tasks.task.comment_message',

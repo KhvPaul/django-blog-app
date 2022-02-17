@@ -1,25 +1,22 @@
-from django.utils.decorators import method_decorator
-from django.views.generic.list import MultipleObjectMixin
-
-from blog.forms import BloggerCreationForm, BloggerChangeForm, ContactUsForm
+from blog.forms import BloggerChangeForm, BloggerCreationForm, CommentCreateForm, ContactUsForm
 from blog.models import Blog, Blogger, Comment
 
-from django.contrib.auth.views import PasswordChangeView
-
-from django.contrib.auth import authenticate, login, logout
+from django.contrib.auth import authenticate, get_user_model, login, logout
 from django.contrib.auth.mixins import LoginRequiredMixin
+from django.contrib.auth.views import PasswordChangeView
 from django.contrib.messages.views import SuccessMessageMixin
 from django.db.models import Count
-from django.http import HttpResponseRedirect
-from django.shortcuts import get_object_or_404, redirect
+from django.http import HttpResponseRedirect, JsonResponse
+from django.shortcuts import redirect
+from django.template.loader import render_to_string
 from django.urls import reverse, reverse_lazy
+# from django.utils.decorators import method_decorator
 from django.views import generic
+from django.views.generic.list import MultipleObjectMixin
 
-from django.views.decorators.cache import cache_page
+# from django.views.decorators.cache import cache_page
 
-# from .tasks.task import contact_us, message
-
-from django.contrib.auth import get_user_model
+from .tasks.task import contact_us
 
 
 class SignUpFormView(SuccessMessageMixin, generic.CreateView):
@@ -179,21 +176,36 @@ class BlogDeleteView(LoginRequiredMixin, generic.DeleteView):
     success_url = reverse_lazy('blog-list')
 
 
-class CommentCreateView(SuccessMessageMixin, generic.CreateView):
-    model = Comment
+class CommentCreateFormView(SuccessMessageMixin, generic.FormView):
+    form_class = CommentCreateForm
     fields = ('blogger', "content")
     success_message = 'Comment successfully created'
+    data = dict()
 
-    def get_success_url(self):
-        return reverse('blog-detail', kwargs={'pk': self.object.blog.pk})
+    # def get_success_url(self):
+    #     return reverse('blog-detail', kwargs={'pk': self.object.blog.pk})
 
-    # def get_initial(self):
-    #     blog = get_object_or_404(Blog, c)
-    #     return {
-    #         'blog': blog
-    #     }
+    # def form_valid(self, form):
+    #     comment = form.save(commit=False)
+    #     comment.blog = Blog.objects.get(pk=self.kwargs['pk'])
+    #     comment.save()
+    #     # message.delay(
+    #     #     comment=comment.id,
+    #     #     blogger=None,
+    #     # )
+    #     return super(CommentCreateView, self).form_valid(form)
+
+    def get(self, request, *args, **kwargs):
+        form = ContactUsForm()
+        context = {'form': form, 'blog': Blog.objects.get(pk=self.kwargs['pk'])}
+
+        self.data['html_form'] = render_to_string('blog/comment_form.html', context, request=request)
+        return JsonResponse(self.data)
+
+    # def post(self, request, *args, **kwargs):
 
     def form_valid(self, form):
+        self.data['form_is_valid'] = True
         comment = form.save(commit=False)
         comment.blog = Blog.objects.get(pk=self.kwargs['pk'])
         comment.save()
@@ -201,14 +213,44 @@ class CommentCreateView(SuccessMessageMixin, generic.CreateView):
         #     comment=comment.id,
         #     blogger=None,
         # )
-        return super(CommentCreateView, self).form_valid(form)
+        self.data['html_book_list'] = render_to_string('blog/blog_tmp.html', {
+            'blog': Blog.objects.get(pk=self.kwargs['pk'])
+        })
+        return JsonResponse(self.data)
+
+
+# class ContactUsFormView(SuccessMessageMixin, generic.FormView):
+#     template_name = 'blog/contact_us.html'
+#     form_class = ContactUsForm
+#     success_url = reverse_lazy('blog-list')
+#     success_message = 'Thank you for your feedback'
+#
+#     def get_initial(self):
+#         if self.request.user.is_anonymous:
+#             return {
+#                 'email': ''
+#             }
+#         else:
+#             return {
+#                 'email': self.request.user.email
+#             }
+#
+#     def form_valid(self, form):
+#         # contact_us.delay(
+#         #     email=form.cleaned_data.get('email'),
+#         #     text=form.cleaned_data.get('text')
+#         # )
+#         return super(ContactUsFormView, self).form_valid(form)
+
+# –––––––––––––––––––––––––––––––––––––––––––––––––––––––––––––––––––––––––––––––––––––––––––––
 
 
 class ContactUsFormView(SuccessMessageMixin, generic.FormView):
-    template_name = 'blog/contact_us.html'
+    # template_name = 'blog/contact_us.html'
     form_class = ContactUsForm
-    success_url = reverse_lazy('blog-list')
+    # success_url = reverse_lazy('blog-list')
     success_message = 'Thank you for your feedback'
+    data = dict()
 
     def get_initial(self):
         if self.request.user.is_anonymous:
@@ -220,13 +262,45 @@ class ContactUsFormView(SuccessMessageMixin, generic.FormView):
                 'email': self.request.user.email
             }
 
-    def form_valid(self, form):
-        # contact_us.delay(
-        #     email=form.cleaned_data.get('email'),
-        #     text=form.cleaned_data.get('text')
-        # )
-        return super(ContactUsFormView, self).form_valid(form)
+    def get(self, request, *args, **kwargs):
+        form = ContactUsForm(initial=self.get_initial())
+        context = {'form': form}
+        self.data['html_form'] = render_to_string('blog/contact_us.html', context, request=request)
+        return JsonResponse(self.data)
 
+    # def post(self, request, *args, **kwargs):
+
+    def form_valid(self, form):
+        self.data['form_is_valid'] = True
+        contact_us.delay(
+            email=form.cleaned_data.get('email'),
+            text=form.cleaned_data.get('text')
+        )
+        return JsonResponse(self.data)
+
+
+# def contact_us_form(request):
+#     data = dict()
+#     if request.method == 'POST':
+#         form = ContactUsForm(request.POST)
+#         if form.is_valid():
+#             data['form_is_valid'] = True
+#             data['html_book_list'] = render_to_string('blog/contact_us.html')
+#             contact_us.delay(
+#                                 email=form.cleaned_data.get('email'),
+#                                 text=form.cleaned_data.get('text')
+#                             )
+#         else:
+#             data['form_is_valid'] = False
+#     else:
+#         email = request.user.email if request.user.is_authenticated else ''
+#         form = ContactUsForm(initial={'email': email})
+#     context = {'form': form}
+#     data['html_form'] = render_to_string('blog/contact_us.html', context, request=request)
+#     return JsonResponse(data)
+
+
+# –––––––––––––––––––––––––––––––––––––––––––––––––––––––––––––––––––––––––––––––––––––––––––––
 
 class BloggerPasswordChangeView(SuccessMessageMixin, PasswordChangeView):
     success_message = 'Password successfully changed'
